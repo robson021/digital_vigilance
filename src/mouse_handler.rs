@@ -5,24 +5,55 @@ use std::error;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum MouseError {
+enum MouseError {
     #[error("Failed to initialize event source.")]
     CGEventSourceFailure,
+
+    #[error("Failed to create event source.")]
+    CGEventFailure,
 }
 
-pub(crate) fn move_silently() {}
+pub(crate) fn move_silently() {
+    if let Err(e) = move_back_and_forth() {
+        eprintln!("Failed to move the mouse back and forth: {e}");
+    };
+}
 
 #[inline(always)]
-fn move_to(x: i32, y: i32) -> Result<(), Box<dyn error::Error>> {
-    CGEvent::new_mouse_event(
-        CGEventSource::new(CGEventSourceStateID::CombinedSessionState)
-            .or(Err(MouseError::CGEventSourceFailure))?,
-        CGEventType::MouseMoved,
-        CGPoint::new(x as _, y as _),
-        CGMouseButton::Left,
-    )
-        .or(Err(MouseError::CGEventSourceFailure))?
-        .post(CGEventTapLocation::HID);
+fn move_back_and_forth() -> Result<(), Box<dyn error::Error>> {
+    let current_pos = get_position()?;
+    let new_pos = CGPoint::new(current_pos.x + 0.1, current_pos.y + 0.1);
+
+    move_to(new_pos)?;
+    move_to(current_pos)?;
 
     Ok(())
+}
+
+#[inline]
+fn get_position() -> Result<CGPoint, Box<dyn error::Error>> {
+    Ok(CGEvent::new(get_event_source()?)
+        .or(Err(MouseError::CGEventFailure))?
+        .location())
+}
+
+#[inline]
+fn move_to(point: CGPoint) -> Result<(), Box<dyn error::Error>> {
+    CGEvent::new_mouse_event(
+        get_event_source()?,
+        CGEventType::MouseMoved,
+        point,
+        CGMouseButton::Left,
+    )
+    .or(Err(MouseError::CGEventFailure))?
+    .post(CGEventTapLocation::HID);
+
+    dbg!("Moved to {:?}", point);
+    Ok(())
+}
+
+#[inline(always)]
+fn get_event_source() -> Result<CGEventSource, MouseError> {
+    CGEventSource::new(CGEventSourceStateID::CombinedSessionState)
+        .or(Err(MouseError::CGEventSourceFailure))
 }
