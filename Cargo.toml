@@ -1,0 +1,8 @@
+[package]
+name = "digital_vigilance"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+core-graphics = "0.25.0"
+thiserror = "2.0.12"
