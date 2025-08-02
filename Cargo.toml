@@ -7,3 +7,8 @@ edition = "2024"
 core-graphics = "0.25.0"
 thiserror = "2.0.12"
 tray-item = "0.10.0"
+
+[package.metadata.bundle]
+name = "Digital-Vigilance"
+identifier = "com.github.robson021.digital-vigilance"
+icon = ["icons/contact-lens-eyes.png"]
