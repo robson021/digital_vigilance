@@ -1,27 +1,26 @@
-use std::thread;
 use std::time::Duration;
 use tray_item::{IconSource, TrayItem};
 
 mod mouse_handler;
 
-fn main() {
-    let sleep_time = 3 * 60;
-    let label = &format!("Refresh time: {sleep_time}s");
+#[tokio::main(flavor = "multi_thread", worker_threads = 1)]
+async fn main() {
+    let minutes = 3;
+    let label = &format!("Refresh time: {minutes} minutes");
 
     let mut tray = TrayItem::new("Digital Vigilance", IconSource::Resource("")).unwrap();
     tray.add_label(label).unwrap();
 
-    let inner = tray.inner_mut();
-    inner.add_quit_item("Quit");
-
-    thread::spawn(move || {
-        println!("Will move mouse every {sleep_time} seconds.");
-        let duration = Duration::from_secs(sleep_time);
+    tokio::spawn(async move {
+        println!("Will move mouse every {minutes} minutes.");
+        let duration = Duration::from_secs(minutes * 60);
         loop {
-            thread::sleep(duration);
+            tokio::time::sleep(duration).await;
             mouse_handler::move_silently()
         }
     });
 
+    let inner = tray.inner_mut();
+    inner.add_quit_item("Quit");
     inner.display();
 }

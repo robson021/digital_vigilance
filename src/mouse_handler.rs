@@ -13,13 +13,13 @@ enum MouseError {
     CGEventFailure,
 }
 
-pub(crate) fn move_silently() {
+#[inline(always)]
+pub fn move_silently() {
     if let Err(e) = move_back_and_forth() {
         eprintln!("Failed to move the mouse back and forth: {e}");
     };
 }
 
-#[inline(always)]
 fn move_back_and_forth() -> Result<(), Box<dyn error::Error>> {
     let current_pos = get_position()?;
     let new_pos = CGPoint::new(current_pos.x + 0.1, current_pos.y + 0.1);
