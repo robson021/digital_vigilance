@@ -12,7 +12,9 @@ async fn main() {
     tray.add_label(label).unwrap();
 
     tokio::spawn(async move {
-        println!("Will move mouse every {minutes} minutes.");
+        if cfg!(debug_assertions) {
+            println!("Will move mouse every {minutes} minutes.");
+        }
         let duration = Duration::from_secs(minutes * 60);
         loop {
             tokio::time::sleep(duration).await;

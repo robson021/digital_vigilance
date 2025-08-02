@@ -48,7 +48,9 @@ fn move_to(point: CGPoint) -> Result<(), Box<dyn error::Error>> {
     .or(Err(MouseError::CGEventFailure))?
     .post(CGEventTapLocation::HID);
 
-    dbg!("Moved to {:?}", point);
+    if cfg!(debug_assertions) {
+        dbg!("Moved to {:?}", point);
+    }
     Ok(())
 }
 
