@@ -22,9 +22,9 @@ async fn main() {
 
     tokio::spawn(async move {
         let duration = Arc::clone(&initial_refresh);
-        show_notification(DEFAULT_REFRESH_TIME_SEC / 60);
         move_with_interval(duration).await;
     });
+    show_notification(DEFAULT_REFRESH_TIME_SEC / 60);
     build_menu(&cloned_refresh);
 }
 

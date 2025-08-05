@@ -6,3 +6,7 @@ App icon downloaded from: https://www.flaticon.com/free-icon-font/contact-lens-e
 
 To use it without terminal (just tray icon in menu bar) you need to build executable app for Mac: `cargo bundle --release`<br>
 As a Mac user you may need to grant access to the app and/or terminal. Go to settings: `Privacy & Security` -> `Accessibility`
+### How to disable dock icon (to leave only tray-icon in the nav bar):
+- run bundle task and go to `target/release/bundle/osx/Digital-Vigilance.app/Contents/Info.plist`
+- add these two properties to the file:
+<br>`<key>LSBackgroundOnly</key>`<br>`<true/>`
