@@ -1,13 +1,13 @@
 use crate::APP_NAME;
 use crate::popup_notification::show_notification;
-use crate::refresh_holder::RefreshHolder;
+use crate::refresh_holder::ConfigHolder;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use tokio::sync::Mutex;
 use tray_item::{IconSource, TrayItem};
 
-pub fn build_menu(refresh_holder: &Arc<Mutex<RefreshHolder>>) {
+pub fn build_menu(refresh_holder: &Arc<Mutex<ConfigHolder>>) {
     let mut tray = TrayItem::new(APP_NAME, IconSource::Resource("")).unwrap();
     {
         let refresh_holder_1 = Arc::clone(refresh_holder);
@@ -28,13 +28,12 @@ pub fn build_menu(refresh_holder: &Arc<Mutex<RefreshHolder>>) {
     inner.display();
 }
 
-fn set_new_refresh(holder: &Arc<Mutex<RefreshHolder>>, new_refresh_min: u64) {
-    let duration = Arc::clone(holder);
+fn set_new_refresh(cfg: &Arc<Mutex<ConfigHolder>>, new_refresh_min: u64) {
+    let cfg = Arc::clone(cfg);
+    let refresh_time = new_refresh_min * 60;
     thread::spawn(move || {
-        let refresh_time = new_refresh_min * 60;
-        duration
-            .blocking_lock()
-            .set(Duration::from_secs(refresh_time));
+        cfg.blocking_lock()
+            .set_refresh_time(Duration::from_secs(refresh_time));
         show_notification(new_refresh_min);
     });
 }
