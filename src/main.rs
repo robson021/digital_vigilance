@@ -1,8 +1,7 @@
 use crate::menu_builder::build_menu;
 use crate::popup_notification::show_notification;
-use crate::refresh_holder::ConfigHolder;
+use crate::refresh_holder::{ConfigHolder, SharedConfig};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 mod menu_builder;
 mod mouse_handler;
@@ -18,20 +17,18 @@ async fn main() {
     let cloned_config = Arc::clone(&config);
 
     tokio::spawn(async move {
-        let duration = Arc::clone(&config);
-        move_with_interval(duration).await;
+        move_with_interval(cloned_config).await;
     });
     show_notification(DEFAULT_REFRESH_TIME_SEC / 60);
 
-    build_menu(&cloned_config);
+    build_menu(&config);
 }
 
-async fn move_with_interval(duration: Arc<Mutex<ConfigHolder>>) {
-    // todo: send some signal to break current loop and re-read duration
+async fn move_with_interval(cfg: SharedConfig) {
+    let duration = cfg.lock().await.refresh_time;
     loop {
-        let duration = duration.lock().await.refresh_time;
         if cfg!(debug_assertions) {
-            println!("Current duration: {}s", duration.as_secs());
+            println!("Current refresh time: {}s", duration.as_secs());
         }
         tokio::time::sleep(duration).await;
         mouse_handler::move_silently();
