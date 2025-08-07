@@ -31,7 +31,7 @@ fn set_new_refresh(cfg: &SharedConfig, new_refresh_min: u64, tx: &Sender<()>) {
     thread::spawn(move || {
         cfg.blocking_lock()
             .set_refresh_time(Duration::from_secs(new_refresh_min * 60));
-        show_notification(new_refresh_min);
         tx.send(()).unwrap();
+        show_notification(new_refresh_min);
     });
 }

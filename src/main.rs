@@ -60,6 +60,6 @@ async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
 #[inline(always)]
 pub fn log_debug(msg: &str) {
     if cfg!(debug_assertions) {
-        dbg!(msg);
+        println!("{msg}");
     }
 }
