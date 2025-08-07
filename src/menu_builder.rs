@@ -1,4 +1,4 @@
-use crate::popup_notification::show_notification;
+use crate::popup_notification::show_time_remaining_notification;
 use crate::refresh_holder::SharedConfig;
 use crate::{APP_NAME, log_debug};
 use std::sync::Arc;
@@ -32,6 +32,6 @@ fn set_new_refresh(cfg: &SharedConfig, new_refresh_min: u64, tx: &Sender<()>) {
         cfg.blocking_lock()
             .set_refresh_time(Duration::from_secs(new_refresh_min * 60));
         tx.send(()).unwrap();
-        show_notification(new_refresh_min);
+        show_time_remaining_notification(new_refresh_min);
     });
 }
