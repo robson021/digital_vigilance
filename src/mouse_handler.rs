@@ -1,3 +1,4 @@
+use crate::log_debug;
 use core_graphics::display::CGPoint;
 use core_graphics::event::{CGEvent, CGEventTapLocation, CGEventType, CGMouseButton};
 use core_graphics::event_source::{CGEventSource, CGEventSourceStateID};
@@ -48,10 +49,7 @@ fn move_to(point: CGPoint) -> Result<(), Box<dyn error::Error>> {
     .or(Err(MouseError::CGEventFailure))?
     .post(CGEventTapLocation::HID);
 
-    if cfg!(debug_assertions) {
-        // dbg!("Moved to {:?}", point);
-        println!("moved");
-    }
+    log_debug("Mouse moved");
     Ok(())
 }
 

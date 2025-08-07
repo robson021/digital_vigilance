@@ -36,10 +36,12 @@ async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
     let mut rx = tx.subscribe();
     let duration = cfg.lock().await.uptime.as_secs();
     let mut countdown = duration / 60;
+    log_debug(&format!("New task with {countdown} iterations spawned"));
 
     loop {
         select! {
             _ = rx.recv() => {
+                log_debug("Ending current task");
                 break;
             }
             _ = tokio::time::sleep(Duration::from_secs(60)) => {
@@ -47,10 +49,17 @@ async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
                     countdown -= 1;
                     mouse_handler::move_silently();
                 } else {
-                    println!("idle...");
+                    log_debug("idle...");
                 }
             }
         }
     }
     Box::pin(move_with_interval(cfg, tx)).await;
+}
+
+#[inline(always)]
+pub fn log_debug(msg: &str) {
+    if cfg!(debug_assertions) {
+        dbg!(msg);
+    }
 }

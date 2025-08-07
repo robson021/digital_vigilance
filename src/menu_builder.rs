@@ -1,6 +1,6 @@
-use crate::APP_NAME;
 use crate::popup_notification::show_notification;
 use crate::refresh_holder::SharedConfig;
+use crate::{APP_NAME, log_debug};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
@@ -25,6 +25,7 @@ pub fn build_menu(config: &SharedConfig, tx: Sender<()>) {
 }
 
 fn set_new_refresh(cfg: &SharedConfig, new_refresh_min: u64, tx: &Sender<()>) {
+    log_debug(&format!("New refresh: {new_refresh_min} min"));
     let cfg = Arc::clone(cfg);
     let tx = tx.clone();
     thread::spawn(move || {
