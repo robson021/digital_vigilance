@@ -11,7 +11,7 @@ pub fn build_menu(config: &SharedConfig, tx: Sender<()>) {
     let mut tray = TrayItem::new(APP_NAME, IconSource::Resource("")).unwrap();
     tray.add_label("Keep awake for:").unwrap();
 
-    for minutes in [3, 5, 15, 60, 120, 180] {
+    for minutes in [3, 5, 15, 30, 45, 60, 90, 120, 180] {
         let config = config.clone();
         let tx = tx.clone();
         let refresh_action = move || set_new_refresh(&config, minutes, &tx);

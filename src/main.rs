@@ -21,7 +21,6 @@ async fn main() {
     let cloned_config = Arc::clone(&config);
 
     let (tx, _) = broadcast::channel::<()>(1);
-
     let tx_cloned = tx.clone();
 
     tokio::spawn(async move {
