@@ -49,7 +49,8 @@ fn move_to(point: CGPoint) -> Result<(), Box<dyn error::Error>> {
     .post(CGEventTapLocation::HID);
 
     if cfg!(debug_assertions) {
-        dbg!("Moved to {:?}", point);
+        // dbg!("Moved to {:?}", point);
+        println!("moved");
     }
     Ok(())
 }
