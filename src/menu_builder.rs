@@ -8,20 +8,15 @@ use tray_item::{IconSource, TrayItem};
 
 pub fn build_menu(config: &SharedConfig) {
     let mut tray = TrayItem::new(APP_NAME, IconSource::Resource("")).unwrap();
-    {
-        let refresh_holder_1 = Arc::clone(config);
-        let refresh_holder_2 = Arc::clone(config);
-        let refresh_holder_3 = Arc::clone(config);
+    tray.add_label("Refresh time:").unwrap();
 
-        let refresh_1_min = move || set_new_refresh(&refresh_holder_1, 1);
-        let refresh_3_min = move || set_new_refresh(&refresh_holder_2, 3);
-        let refresh_5_min = move || set_new_refresh(&refresh_holder_3, 5);
-
-        tray.add_label("Refresh time:").unwrap();
-        tray.add_menu_item("1 minute", refresh_1_min).unwrap();
-        tray.add_menu_item("3 minutes", refresh_3_min).unwrap();
-        tray.add_menu_item("5 minutes", refresh_5_min).unwrap();
+    for min in [1, 3, 5] {
+        let cfg = Arc::clone(config);
+        let refresh_action = move || set_new_refresh(&cfg, min);
+        let label = format!("{min} minutes");
+        tray.add_menu_item(&label, refresh_action).unwrap();
     }
+
     let inner = tray.inner_mut();
     inner.add_quit_item("Quit");
     inner.display();
