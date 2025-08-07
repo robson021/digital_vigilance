@@ -46,7 +46,7 @@ async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
                 log_debug("Ending current task");
                 break;
             }
-            _ = tokio::time::sleep(Duration::from_secs(1)) => {
+            _ = tokio::time::sleep(Duration::from_secs(60)) => {
                 if countdown > 0 {
                     countdown -= 1;
                     mouse_handler::move_silently();
