@@ -1,13 +1,13 @@
 use crate::popup_notification::show_time_remaining_notification;
 use crate::refresh_holder::SharedConfig;
-use crate::{APP_NAME, log_debug};
+use crate::{APP_NAME, FromMin, log_debug};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use tokio::sync::broadcast::Sender;
 use tray_item::{IconSource, TrayItem};
 
-pub fn build_menu(config: &SharedConfig, tx: Sender<()>) {
+pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
     let mut tray = TrayItem::new(APP_NAME, IconSource::Resource("")).unwrap();
     tray.add_label("Keep awake for:").unwrap();
 
@@ -30,7 +30,7 @@ fn set_new_refresh(cfg: &SharedConfig, new_refresh_min: u64, tx: &Sender<()>) {
     let tx = tx.clone();
     thread::spawn(move || {
         cfg.blocking_lock()
-            .set_refresh_time(Duration::from_secs(new_refresh_min * 60));
+            .set_refresh_time(Duration::from_min(new_refresh_min));
         tx.send(()).unwrap();
         show_time_remaining_notification(new_refresh_min);
     });

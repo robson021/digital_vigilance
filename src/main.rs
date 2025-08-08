@@ -1,3 +1,4 @@
+use crate::helpers::{FromMin, log_debug};
 use crate::menu_builder::build_menu;
 use crate::popup_notification::{show_message, show_time_remaining_notification};
 use crate::refresh_holder::{ConfigHolder, SharedConfig};
@@ -7,6 +8,7 @@ use tokio::select;
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::Sender;
 
+mod helpers;
 mod menu_builder;
 mod mouse_handler;
 mod popup_notification;
@@ -28,13 +30,13 @@ async fn main() {
     });
     show_time_remaining_notification(DEFAULT_UPTIME_SEC / 60);
 
-    build_menu(&config, tx);
+    build_menu(config, tx);
 }
 
 async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
     let mut rx = tx.subscribe();
-    let duration = cfg.lock().await.uptime.as_secs();
-    let mut countdown = duration / 60;
+    let duration = cfg.lock().await.uptime;
+    let mut countdown = duration.to_minutes();
     log_debug(&format!("New task with {countdown} iterations spawned"));
 
     let show_done = Once::new();
@@ -45,11 +47,11 @@ async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
                 log_debug("Ending current task");
                 break;
             }
-            _ = tokio::time::sleep(Duration::from_secs(60)) => {
+            _ = tokio::time::sleep(Duration::from_min(1)) => {
                 if countdown > 0 {
                     countdown -= 1;
                     mouse_handler::move_silently();
-                } else if countdown == 0 {
+                } else if countdown == 0 && !show_done.is_completed() {
                     show_done.call_once(|| { show_message("Done!"); });
                 } else {
                     log_debug("idle...");
@@ -58,11 +60,4 @@ async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
         }
     }
     Box::pin(move_with_interval(cfg, tx)).await;
-}
-
-#[inline(always)]
-pub fn log_debug(msg: &str) {
-    if cfg!(debug_assertions) {
-        println!("{msg}");
-    }
 }
