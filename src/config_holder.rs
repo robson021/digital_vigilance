@@ -2,10 +2,10 @@ use crate::config_holder::TaskUptime::Timed;
 use crate::helpers::FromMin;
 use std::fmt::Display;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use tokio::sync::Mutex;
 
-pub type SharedConfig = Arc<Mutex<ConfigHolder>>;
+pub type SharedConfig = Arc<Mutex<VigilanceTaskMetadata>>;
 
 #[derive(Debug, Clone, Copy)]
 pub enum TaskUptime {
@@ -16,12 +16,12 @@ pub enum TaskUptime {
 impl Display for TaskUptime {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let duration = match self {
-            Timed(d) => {
-                let sec = d.as_secs();
+            Timed(duration) => {
+                let sec = duration.as_secs();
                 if sec < 60 {
                     format!("{sec} seconds")
                 } else {
-                    format!("{} minutes", d.as_minutes())
+                    format!("{} minutes", duration.as_minutes())
                 }
             }
             TaskUptime::Infinite => "infinity".to_owned(),
@@ -30,17 +30,23 @@ impl Display for TaskUptime {
     }
 }
 
-pub struct ConfigHolder {
+pub struct VigilanceTaskMetadata {
     pub uptime: TaskUptime,
+    pub start_time: Option<SystemTime>,
 }
 
-impl ConfigHolder {
+impl VigilanceTaskMetadata {
     // pub fn new_infinite() -> SharedConfig { Arc::new(Mutex::new(ConfigHolder { uptime: TaskUptime::Infinite, })) }
 
     pub fn new_timed(uptime_seconds: u64) -> SharedConfig {
-        Arc::new(Mutex::new(ConfigHolder {
+        Arc::new(Mutex::new(VigilanceTaskMetadata {
             uptime: Timed(Duration::from_secs(uptime_seconds)),
+            start_time: None,
         }))
+    }
+
+    pub fn set_start_time_to_now(&mut self) {
+        self.start_time = Some(SystemTime::now());
     }
 
     #[inline(always)]

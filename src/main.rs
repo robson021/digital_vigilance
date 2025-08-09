@@ -1,4 +1,4 @@
-use crate::config_holder::{ConfigHolder, SharedConfig, TaskUptime};
+use crate::config_holder::{SharedConfig, TaskUptime, VigilanceTaskMetadata};
 use crate::helpers::{FromMin, log_debug};
 use crate::menu_builder::build_menu;
 use crate::popup_notification::{show_message, show_time_remaining_notification};
@@ -21,7 +21,7 @@ const DEFAULT_UPTIME_SEC: u64 = 60 * 60;
 #[tokio::main(flavor = "multi_thread", worker_threads = 1)]
 async fn main() {
     // let config = ConfigHolder::new_infinite();
-    let config = ConfigHolder::new_timed(DEFAULT_UPTIME_SEC);
+    let config = VigilanceTaskMetadata::new_timed(DEFAULT_UPTIME_SEC);
     let cloned_config = Arc::clone(&config);
 
     let (tx, _) = broadcast::channel::<()>(1);
@@ -39,7 +39,11 @@ async fn main() {
 async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
     let mut rx = tx.subscribe();
     loop {
-        let uptime = cfg.lock().await.uptime;
+        let uptime = {
+            let mut guard = cfg.lock().await;
+            guard.set_start_time_to_now();
+            guard.uptime
+        };
         let minutes = match uptime {
             TaskUptime::Infinite => u64::MAX,
             TaskUptime::Timed(duration) => duration.as_minutes(),
