@@ -1,5 +1,4 @@
-use crate::popup_notification::show_time_remaining_notification;
-use crate::refresh_holder::SharedConfig;
+use crate::config_holder::{SharedConfig, TaskUptime};
 use crate::{APP_NAME, FromMin, log_debug};
 use std::sync::Arc;
 use std::thread;
@@ -11,27 +10,31 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
     let mut tray = TrayItem::new(APP_NAME, IconSource::Resource("")).unwrap();
     tray.add_label("Keep awake for:").unwrap();
 
-    for minutes in [3, 5, 15, 30, 45, 60, 90, 120, 180] {
+    for task_uptime in [
+        TaskUptime::Timed(Duration::from_min(5)),
+        TaskUptime::Timed(Duration::from_min(15)),
+        TaskUptime::Timed(Duration::from_min(30)),
+        TaskUptime::Timed(Duration::from_min(45)),
+        TaskUptime::Timed(Duration::from_min(60)),
+        TaskUptime::Infinite,
+    ] {
         let config = config.clone();
         let tx = tx.clone();
-        let refresh_action = move || set_new_refresh(&config, minutes, &tx);
-        let label = format!("{minutes} minutes");
-        tray.add_menu_item(&label, refresh_action).unwrap();
+        let refresh_action = move || set_new_refresh(&config, task_uptime, &tx);
+        let label = &task_uptime.to_string();
+        tray.add_menu_item(label, refresh_action).unwrap();
     }
-
     let inner = tray.inner_mut();
     inner.add_quit_item("Quit");
     inner.display();
 }
 
-fn set_new_refresh(cfg: &SharedConfig, new_refresh_min: u64, tx: &Sender<()>) {
-    log_debug(&format!("New refresh: {new_refresh_min} min"));
+fn set_new_refresh(cfg: &SharedConfig, uptime: TaskUptime, tx: &Sender<()>) {
+    log_debug(&format!("New refresh time: {:?}", uptime));
     let cfg = Arc::clone(cfg);
     let tx = tx.clone();
     thread::spawn(move || {
-        cfg.blocking_lock()
-            .set_refresh_time(Duration::from_min(new_refresh_min));
+        cfg.blocking_lock().set_refresh_time(uptime);
         tx.send(()).unwrap();
-        show_time_remaining_notification(new_refresh_min);
     });
 }

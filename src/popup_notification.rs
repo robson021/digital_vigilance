@@ -1,11 +1,10 @@
 use crate::APP_NAME;
+use crate::config_holder::TaskUptime;
 use notify_rust::Notification;
 
 #[inline]
-pub fn show_time_remaining_notification(time_in_minutes: u64) {
-    show_message(&format!(
-        "Will stay vigilant for {time_in_minutes} minutes."
-    ));
+pub fn show_time_remaining_notification(uptime: &TaskUptime) {
+    show_message(&format!("Will stay vigilant for {uptime}."));
 }
 
 pub fn show_message(message: &str) {
