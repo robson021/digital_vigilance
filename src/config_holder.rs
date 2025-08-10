@@ -45,11 +45,30 @@ impl VigilanceTaskMetadata {
         }))
     }
 
+    pub fn time_left(&self) -> String {
+        if self.start_time.is_none() {
+            return "task not started".to_owned();
+        }
+        match self.uptime {
+            TaskUptime::Infinite => "infinity".to_owned(),
+            Timed(duration) => {
+                let start_time = self.start_time.unwrap();
+                let elapsed_sec = SystemTime::now()
+                    .duration_since(start_time)
+                    .unwrap()
+                    .as_secs();
+                let time_left_sec = duration.as_secs() - elapsed_sec;
+                format!("{}s (~{} min)", time_left_sec, time_left_sec / 60)
+            }
+        }
+    }
+
+    #[inline]
     pub fn set_start_time_to_now(&mut self) {
         self.start_time = Some(SystemTime::now());
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn set_refresh_time(&mut self, new_uptime: TaskUptime) {
         self.uptime = new_uptime;
     }

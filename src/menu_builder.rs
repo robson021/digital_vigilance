@@ -28,17 +28,21 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
         }
 
         tray.add_label("Info:").unwrap();
-        tray.add_menu_item("When task was started?", move || {
+        tray.add_menu_item("Time left", move || {
             let config = config.clone();
             thread::spawn(move || {
-                let start_time = config.blocking_lock().start_time;
+                let (time_left, start_time) = {
+                    let guard = config.blocking_lock();
+                    (guard.time_left(), guard.start_time)
+                };
                 match start_time {
                     Some(time) => {
                         let elapsed = SystemTime::now().duration_since(time).unwrap().as_secs();
                         show_message(&format!(
-                            "Time elapsed: {} seconds (~{} minutes).",
+                            "Time elapsed: {} seconds (~{} min).\nLeft: {}",
                             elapsed,
-                            elapsed / 60
+                            elapsed / 60,
+                            time_left,
                         ));
                     }
                     None => show_message("No task is running."),
@@ -46,6 +50,11 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
             });
         })
         .unwrap();
+        tray.add_menu_item("About the app", || {
+            show_message("Source code:\ngithub.com/robson021/digital_vigilance");
+        })
+        .unwrap();
+
         tray.add_label("").unwrap();
     }
 
