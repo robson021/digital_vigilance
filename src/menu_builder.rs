@@ -1,8 +1,6 @@
 use crate::config_holder::{SharedConfig, TaskUptime};
 use crate::popup_notification::show_message;
 use crate::{APP_NAME, FromMin, log_debug};
-use std::sync::Arc;
-use std::thread;
 use std::time::{Duration, SystemTime};
 use tokio::sync::broadcast::Sender;
 use tray_item::{IconSource, TrayItem};
@@ -30,9 +28,9 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
         tray.add_label("Info:").unwrap();
         tray.add_menu_item("Time left", move || {
             let config = config.clone();
-            thread::spawn(move || {
+            tokio::spawn(async move {
                 let (time_left, start_time) = {
-                    let guard = config.blocking_lock();
+                    let guard = config.lock().await;
                     (guard.time_left(), guard.start_time)
                 };
                 match start_time {
@@ -65,10 +63,11 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
 
 fn set_new_refresh(cfg: &SharedConfig, uptime: TaskUptime, tx: &Sender<()>) {
     log_debug(&format!("New refresh time: {:?}", uptime));
-    let cfg = Arc::clone(cfg);
+    let cfg = cfg.clone();
     let tx = tx.clone();
-    thread::spawn(move || {
-        cfg.blocking_lock().set_refresh_time(uptime);
+
+    tokio::spawn(async move {
+        cfg.lock().await.set_refresh_time(uptime);
         tx.send(()).unwrap();
     });
 }

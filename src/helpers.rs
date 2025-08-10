@@ -13,11 +13,11 @@ pub trait FromMin {
 }
 
 impl FromMin for Duration {
-    #[inline(always)]
+    #[inline]
     fn from_min(minutes: u64) -> Duration {
         Duration::from_secs(minutes * 60)
     }
-    #[inline(always)]
+    #[inline]
     fn as_minutes(&self) -> u64 {
         self.as_secs() / 60
     }

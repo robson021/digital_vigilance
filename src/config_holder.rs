@@ -18,10 +18,9 @@ impl Display for TaskUptime {
         let duration = match self {
             Timed(duration) => {
                 let sec = duration.as_secs();
-                if sec < 60 {
-                    format!("{sec} seconds")
-                } else {
-                    format!("{} minutes", duration.as_minutes())
+                match sec < 60 {
+                    true => format!("{sec} seconds"),
+                    false => format!("{} minutes", duration.as_minutes()),
                 }
             }
             TaskUptime::Infinite => "infinity".to_owned(),
