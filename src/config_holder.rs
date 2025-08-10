@@ -45,20 +45,13 @@ impl VigilanceTaskMetadata {
         }))
     }
 
-    pub fn time_left(&self) -> String {
-        if self.start_time.is_none() {
-            return "task not started".to_owned();
-        }
+    pub fn time_left(&self) -> Duration {
         match self.uptime {
-            TaskUptime::Infinite => "infinity".to_owned(),
+            TaskUptime::Infinite => Duration::MAX,
             Timed(duration) => {
                 let start_time = self.start_time.unwrap();
-                let elapsed_sec = SystemTime::now()
-                    .duration_since(start_time)
-                    .unwrap()
-                    .as_secs();
-                let time_left_sec = duration.as_secs() - elapsed_sec;
-                format!("{}s (~{} min)", time_left_sec, time_left_sec / 60)
+                let elapsed = SystemTime::now().duration_since(start_time).unwrap();
+                duration.abs_diff(elapsed)
             }
         }
     }

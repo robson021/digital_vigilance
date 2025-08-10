@@ -37,12 +37,11 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
                 };
                 match start_time {
                     Some(time) => {
-                        let elapsed = SystemTime::now().duration_since(time).unwrap().as_secs();
+                        let elapsed = SystemTime::now().duration_since(time).unwrap();
                         show_message(&format!(
-                            "Time elapsed: {} seconds (~{} min).\nLeft: {}",
-                            elapsed,
-                            elapsed / 60,
-                            time_left,
+                            "Elapsed: {} min.\nLeft: {} min",
+                            elapsed.as_minutes(),
+                            time_left.as_minutes(),
                         ));
                     }
                     None => show_message("No task is running."),
@@ -50,12 +49,13 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
             });
         })
         .unwrap();
+
         tray.add_menu_item("About the app", || {
             show_message("Source code:\ngithub.com/robson021/digital_vigilance");
         })
         .unwrap();
 
-        tray.add_label("").unwrap();
+        tray.add_label("Stop:").unwrap();
     }
 
     let inner = tray.inner_mut();
