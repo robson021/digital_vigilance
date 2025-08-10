@@ -39,7 +39,7 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
                     Some(time) => {
                         let elapsed = SystemTime::now().duration_since(time).unwrap();
                         show_message(&format!(
-                            "Elapsed: {} min.\nLeft: {} min",
+                            "Elapsed: {} min.\nLeft: {} min.",
                             elapsed.as_minutes(),
                             time_left.as_minutes(),
                         ));

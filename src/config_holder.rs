@@ -26,7 +26,7 @@ impl Display for TaskUptime {
             }
             TaskUptime::Infinite => "infinity".to_owned(),
         };
-        write!(f, "{}", duration)
+        write!(f, "{duration}")
     }
 }
 
