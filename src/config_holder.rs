@@ -35,11 +35,9 @@ pub struct VigilanceTaskMetadata {
 }
 
 impl VigilanceTaskMetadata {
-    // pub fn new_infinite() -> SharedConfig { Arc::new(Mutex::new(ConfigHolder { uptime: TaskUptime::Infinite, })) }
-
-    pub fn new_timed(uptime_seconds: u64) -> SharedConfig {
+    pub fn new(uptime: TaskUptime) -> SharedConfig {
         Arc::new(Mutex::new(VigilanceTaskMetadata {
-            uptime: Timed(Duration::from_secs(uptime_seconds)),
+            uptime,
             start_time: None,
         }))
     }

@@ -16,12 +16,11 @@ mod mouse_handler;
 mod popup_notification;
 
 const APP_NAME: &str = "Digital Vigilance";
-const DEFAULT_UPTIME_SEC: u64 = 60 * 60;
+const DEFAULT_UPTIME_SEC: TaskUptime = TaskUptime::Timed(Duration::from_secs(60 * 60));
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 1)]
 async fn main() {
-    // let config = ConfigHolder::new_infinite();
-    let config = VigilanceTaskMetadata::new_timed(DEFAULT_UPTIME_SEC);
+    let config = VigilanceTaskMetadata::new(DEFAULT_UPTIME_SEC);
     let cloned_config = Arc::clone(&config);
 
     let (tx, _) = broadcast::channel::<()>(1);
@@ -38,7 +37,7 @@ async fn main() {
 
 async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
     let mut rx = tx.subscribe();
-    loop {
+    'task: loop {
         let uptime = {
             let mut guard = cfg.lock().await;
             guard.set_start_time_to_now();
@@ -64,7 +63,7 @@ async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
             }
         }
         match gracefully_shutdown {
-            true => break,
+            true => break 'task,
             false => log_debug("Broken by signal"),
         }
     }
