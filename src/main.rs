@@ -1,5 +1,5 @@
 use crate::config_holder::{SharedConfig, TaskUptime, VigilanceTaskMetadata};
-use crate::helpers::{FromMin, log_debug};
+use crate::helpers::{ToTimeFormat, log_debug};
 use crate::menu_builder::build_menu;
 use crate::popup_notification::{show_message, show_time_remaining_notification};
 use std::process::exit;
@@ -45,7 +45,7 @@ async fn move_with_interval(cfg: SharedConfig, tx: Sender<()>) {
         };
         let minutes = match uptime {
             TaskUptime::Infinite => u64::MAX,
-            TaskUptime::Timed(duration) => duration.as_minutes(),
+            TaskUptime::Timed(duration) => duration.as_minutes_rounded(),
         };
         log_debug(&format!("New task with {minutes} minutes duration"));
         show_time_remaining_notification(&uptime);

@@ -1,5 +1,5 @@
 use crate::config_holder::TaskUptime::Timed;
-use crate::helpers::FromMin;
+use crate::helpers::ToTimeFormat;
 use std::fmt::Display;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
@@ -16,13 +16,7 @@ pub enum TaskUptime {
 impl Display for TaskUptime {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let duration = match self {
-            Timed(duration) => {
-                let sec = duration.as_secs();
-                match sec < 60 {
-                    true => format!("{sec} seconds"),
-                    false => format!("{} minutes", duration.as_minutes()),
-                }
-            }
+            Timed(duration) => duration.as_string(),
             TaskUptime::Infinite => "infinity".to_owned(),
         };
         write!(f, "{duration}")

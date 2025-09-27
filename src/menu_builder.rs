@@ -1,6 +1,6 @@
 use crate::config_holder::{SharedConfig, TaskUptime};
 use crate::popup_notification::show_message;
-use crate::{APP_NAME, FromMin, log_debug};
+use crate::{APP_NAME, ToTimeFormat, log_debug};
 use std::time::{Duration, SystemTime};
 use tokio::sync::broadcast::Sender;
 use tray_item::{IconSource, TrayItem};
@@ -30,16 +30,16 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
             let config = config.clone();
             tokio::spawn(async move {
                 let (time_left, start_time) = {
-                    let guard = config.lock().await;
-                    (guard.time_left(), guard.start_time)
+                    let task_metadata = config.lock().await;
+                    (task_metadata.time_left(), task_metadata.start_time)
                 };
                 match start_time {
                     Some(time) => {
                         let elapsed = SystemTime::now().duration_since(time).unwrap();
                         show_message(&format!(
-                            "Elapsed: {} min.\nLeft: {} min.",
-                            elapsed.as_minutes(),
-                            time_left.as_minutes(),
+                            "Elapsed: {}.\nLeft: {}.",
+                            elapsed.as_string(),
+                            time_left.as_string(),
                         ));
                     }
                     None => show_message("No task is running."),
