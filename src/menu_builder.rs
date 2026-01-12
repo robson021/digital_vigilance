@@ -10,14 +10,12 @@ pub fn build_menu(config: SharedConfig, tx: Sender<()>) {
     {
         tray.add_label("Keep awake for:").unwrap();
 
-        for task_uptime in [
-            TaskUptime::Timed(Duration::from_min(5)),
-            TaskUptime::Timed(Duration::from_min(15)),
-            TaskUptime::Timed(Duration::from_min(30)),
-            TaskUptime::Timed(Duration::from_min(45)),
-            TaskUptime::Timed(Duration::from_min(60)),
-            TaskUptime::Infinite,
-        ] {
+        let uptimes = [5, 8, 13, 21, 34, 55, 89] // Fibonacci
+            .iter()
+            .map(|x| TaskUptime::Timed(Duration::from_min(*x)))
+            .collect::<Vec<_>>();
+
+        for task_uptime in uptimes {
             let config = config.clone();
             let tx = tx.clone();
             let refresh_action = move || set_new_refresh(&config, task_uptime, &tx);
